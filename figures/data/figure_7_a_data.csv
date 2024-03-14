@@ -1,0 +1,25 @@
+tissue	smoker_status	set	n_subjects	n_images
+Lung	Smoker	Train 	228	18741
+Lung	Never Smoker	Train 	175	16458
+Lung	Ex-smoker	Train 	139	13054
+Lung	Smoker	Test	48	4675
+Lung	Never Smoker	Test	37	3010
+Lung	Ex-smoker	Test	22	2451
+Thyroid	Smoker	Train 	258	28456
+Thyroid	Never Smoker	Train 	198	24335
+Thyroid	Ex-smoker	Train 	149	15971
+Thyroid	Smoker	Test	48	5224
+Thyroid	Never Smoker	Test	37	4404
+Thyroid	Ex-smoker	Test	22	2205
+Pancreas	Smoker	Train 	234	64099
+Pancreas	Never Smoker	Train 	186	50187
+Pancreas	Ex-smoker	Train 	127	32687
+Pancreas	Smoker	Test	48	14048
+Pancreas	Never Smoker	Test	37	8751
+Pancreas	Ex-smoker	Test	22	6178
+Esophagus mucosa	Smoker	Train 	264	28672
+Esophagus mucosa	Never Smoker	Train 	212	23484
+Esophagus mucosa	Ex-smoker	Train 	134	14487
+Esophagus mucosa	Smoker	Test	48	5122
+Esophagus mucosa	Never Smoker	Test	37	3214
+Esophagus mucosa	Ex-smoker	Test	22	2248

@@ -1,2 +1,23 @@
-# 2024_GTEx_Smoking
-Companion Github Repo for the paper "Cigarette smoking drives accelerated aging across human tissues"
+Companion Github Repo for the paper "The transcriptomic effects of cigarrete smoking across human tissues"
+
+# GTEX-Smoking
+
+Code to run differential gene expression analysis
+```
+/analysis/Expression_models.sh
+```
+
+Code to run differential splicing analysis
+```
+/analysis/Splicing_models.sh
+```
+
+Code to run differential methylation analysis
+```
+/analysis/Methylation_models.sh
+```
+Code to run enrichement analsyis on gene expresion results 
+
+```
+/analysis/Enrichement_analysis.sh
+```

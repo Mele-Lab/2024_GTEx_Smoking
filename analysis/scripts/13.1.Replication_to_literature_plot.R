@@ -1,0 +1,241 @@
+#!/usr/bin/env Rscript
+# @Author: Jose Miguel Ramirez
+# @E-mail: jose.ramirez1@bsc.es
+# @Description: Methylation replication in previous studies
+# @software version: R=4.2.2
+
+#Set path 
+# setwd(system("pwd", intern = T)) #If in linux
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path)) #If using Rstudio
+setwd("..")
+
+#This code creates a plot to compare logFC between ex smokers and smokers, and between ex smokers and never smokers
+library(ggplot2)
+
+print("Reading results")
+results <- readRDS("tissues/Lung/DML_results.rds")
+
+#Papers to compare:
+annotation <- read.csv("~/Documents/mn4/scratch/bsc83/bsc83535/GTEx/v9/Oliva/GPL21145_MethylationEPIC_15073387_v-1-0_processed.csv")
+#Probes tested in both EPIC and 450K Arrays
+background <- annotation[is.na(annotation$Methyl450_Loci)==F,"Name"]
+
+smoking2 <- results$Smoking2
+smoking2 <- smoking2[rownames(smoking2) %in% background,]
+signif <- smoking2[smoking2$adj.P.Val<0.05,]
+hypo <- rownames(signif[signif$logFC<0,])
+hyper <- rownames(signif[signif$logFC>0,])
+
+#AHRR
+"cg05575921" %in% rownames(signif)
+"cg25648203" %in% rownames(signif)
+"cg04135110" %in% rownames(signif)
+"cg04135110" %in% rownames(signif)
+
+#CYP1A1
+"cg23680900" %in% rownames(signif)
+"cg26516004" %in% rownames(signif)
+"cg10009577" %in% rownames(signif)
+
+#Blood https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5267325/#SD3 
+name <- "Blood: Joehanes et al. 2016"
+data <- "450 Array"
+sample_size <- 9389 #S + NS
+
+library(readxl)
+blood <- read_excel("data/literature/Blood_Sup_2.xlsx", sheet = 3)
+colnames(blood) <- blood[2,]
+blood <- blood[-c(1,2),]
+blood <- blood[blood$`Probe ID` %in% background,] #Only 94% of the probes in 450K are in EPIC
+blood_up <- blood[blood$Effect>0,]
+blood_down <- blood[blood$Effect<0,]
+common <- c(blood_up$`Probe ID`[blood_up$`Probe ID` %in% hyper], blood_down$`Probe ID`[blood_down$`Probe ID` %in% hypo])
+only_blood <- table(c(blood_up$`Probe ID`, blood_down$`Probe ID`) %in% common)[1]
+only_ours <- table(c(hypo, hyper) %in% common)[1]
+bg <- background[!background %in% common]
+bg <- bg[!bg %in% only_blood]
+bg <- bg[!bg %in% only_ours]
+m <- matrix(c(length(common), only_blood, only_ours, length(bg)), nrow=2)
+# t <- fisher.test(m, alternative = "greater") #common, signif only in blood, signif only in lung, not signig
+t <- fisher.test(m) #common, signif only in blood, signif only in lung, not signig
+p_vals <- t$p.value
+ors <- t$estimate
+CI_down <- t$conf.int[1]
+CI_up <- t$conf.int[2]
+overlaps <- length(common)
+totals <- length(common) + only_blood
+names <- name
+samples <- sample_size
+dmps <- nrow(blood) #positions they reported that are available in the EPIC array (mention in the legend)
+
+#Adipose tissue https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6196025/
+name <- "Adipose: Tsai et al. 2018"
+data <- "450 Array"
+sample_size <- 345
+
+adipose <- read_excel("data/literature/Adipose.xlsx")
+adipose <- adipose[-1,]
+adipose <- adipose[adipose$lmnID %in% background,] #36 out of 42 are tested both in 450K and EPIC
+ad_up <- adipose$lmnID[adipose$Coef.>0]
+ad_down <- adipose$lmnID[adipose$Coef.<0]
+common <- c(ad_up[ad_up %in% hyper], ad_down[ad_down %in% hypo])
+bg <- background[!background %in% adipose$lmnID]
+bg <- bg[!bg %in% rownames(signif)]
+m <- matrix(c(length(common), nrow(adipose)-length(common), nrow(signif)-length(common), 
+              length(bg)), nrow=2)
+# t <- fisher.test(m, alternative = "greater")
+t <- fisher.test(m)
+p_vals <- c(p_vals, t$p.value)
+ors <-  c(ors, t$estimate)
+overlaps <-  c(overlaps, length(common))
+CI_down <- c(CI_down, t$conf.int[1])
+CI_up <- c(CI_up, t$conf.int[2])
+totals <-  c(totals, nrow(adipose))
+names <- c(names, name)
+samples <- c(samples, sample_size)
+dmps <- c(dmps, nrow(adipose))
+
+#Lung https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5886283/ smokers vs long time ex smokers
+name <- "Lung: Stueve et al. 2017"
+data <- "450 Array"
+sample_size <- 237
+
+stueve <- c("cg17113147", "cg05575921", "cg07992500", "cg14120703", "cg11152412", "cg03224163", "cg15912732", "cg13787850")
+common <- stueve[stueve %in% hypo]
+bg <- background[!background %in% rownames(signif)]
+m <- matrix(c(length(common), length(stueve)-length(common), nrow(signif)-length(common), 
+              length(bg)), nrow=2)
+t <- fisher.test(m)
+# t <- fisher.test(m, alternative = "greater")
+p_vals <- c(p_vals, t$p.value)
+ors <-  c(ors, t$estimate)
+CI_down <- c(CI_down, t$conf.int[1])
+CI_up <- c(CI_up, t$conf.int[2])
+overlaps <-  c(overlaps, length(common))
+totals <-  c(totals, length(stueve))
+names <- c(names, name)
+samples <- c(samples, sample_size)
+dmps <- c(dmps, length(stueve))
+
+
+#Lung cancer https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6418160/ 66 CpGs
+name <- "Lung cancer: Bakulski et al. 2019"
+data <- "450 Array"
+sample_size <- 152
+bakulski <- read_excel("data/literature/Bakulski.xlsx") #Supplementary File S1
+bakulski <- bakulski[2:nrow(bakulski),]
+bakulski <- bakulski[bakulski$CpG %in% background,]
+bakulski_up <- bakulski$CpG[bakulski[,5]>0]
+bakulski_down <- bakulski$CpG[bakulski[,5]<0]
+common <- c(bakulski_up[bakulski_up %in% hyper], bakulski_down[bakulski_down %in% hypo])
+bg <- background[!background %in% bakulski$CpG]
+bg <- bg[!bg %in% rownames(signif)]
+m <- matrix(c(length(common), nrow(bakulski)-length(common), nrow(signif)-length(common),
+              length(bg)), nrow=2)
+t <- fisher.test(m)
+# t <- fisher.test(m, alternative = "greater")
+p_vals <- c(p_vals, t$p.value)
+ors <-  c(ors, t$estimate)
+CI_down <- c(CI_down, t$conf.int[1])
+CI_up <- c(CI_up, t$conf.int[2])
+overlaps <-  c(overlaps, length(common))
+totals <-  c(totals, nrow(bakulski))
+names <- c(names, name)
+samples <- c(samples, sample_size)
+dmps <- c(dmps, nrow(bakulski))
+
+
+
+#Lung recent Ringht et al. bronchoalveolar lavage cells https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6710853/#bb0160 
+name <- "Lung: Ringht et al. 2019"
+tissue <- "bronchoalveolar lavage cells"
+data <- "EPIC Array"
+sample_size <- 49
+
+ringht <- read_excel("data/literature/Ringht.xlsx", sheet = 3)
+smoking2 <- results$Smoking2
+background <- rownames(smoking2) #We do not consider some positions with SNPs (check Oliva et al.)
+ringht <- ringht[ringht$Probe %in% background,]
+# signif <- smoking2[smoking2$adj.P.Val<0.05,]
+# hypo <- rownames(signif[signif$logFC<0,])
+# hyper <- rownames(signif[signif$logFC>0,])
+ringht_up <- ringht$Probe[ringht$direction=="hyper"]
+ringht_down <- ringht$Probe[ringht$direction=="hypo"]
+common <- c(ringht_up[ringht_up %in% hyper], ringht_down[ringht_down %in% hypo])
+bg <- background[!background %in% ringht$Probe]
+bg <- bg[!bg %in% rownames(signif)]
+m <- matrix(c(length(common), nrow(ringht)-length(common), nrow(signif)-length(common),
+              length(bg)), nrow=2)
+t <- fisher.test(m)
+# t <- fisher.test(m, alternative = "greater")
+p_vals <- c(p_vals, t$p.value)
+ors <-  c(ors, t$estimate)
+CI_down <- c(CI_down, t$conf.int[1])
+CI_up <- c(CI_up, t$conf.int[2])
+overlaps <-  c(overlaps, length(common))
+totals <-  c(totals, nrow(ringht))
+names <- c(names, name)
+samples <- c(samples, sample_size)
+dmps <- c(dmps, nrow(ringht))
+
+
+#Blood EPIC https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7888173/#MOESM2
+name <- "Blood: Christiansen et al. 2021"
+data <- "EPIC Array"
+sample_size <- 764
+
+Christiansen <- read_excel("data/literature/Christiansen.xlsx", sheet = 2)
+names(Christiansen) <- Christiansen[2,]
+Christiansen <- Christiansen[3:nrow(Christiansen),]
+Christiansen <- Christiansen[Christiansen$IlmnID %in% background,]
+#Is it hypomethylated in 4 or 5 cohorts?
+trues <- lengths(regmatches(Christiansen$`Effect (+ hypermethylation, - hypomethylation)`, gregexpr("-", Christiansen$`Effect (+ hypermethylation, - hypomethylation)`))) > 4
+Christiansen_up <- Christiansen$IlmnID[!trues]
+Christiansen_down <- Christiansen$IlmnID[trues]
+common <- c(Christiansen_up[Christiansen_up %in% hyper], Christiansen_down[Christiansen_down %in% hypo])
+bg <- background[!background %in% Christiansen$IlmnID]
+bg <- bg[!bg %in% rownames(signif)]
+m <- matrix(c(length(common), nrow(Christiansen)-length(common), nrow(signif)-length(common),
+              length(bg)), nrow=2)
+t <- fisher.test(m)
+# t <- fisher.test(m, alternative = "greater")
+p_vals <- c(p_vals, t$p.value)
+ors <-  c(ors, t$estimate)
+CI_down <- c(CI_down, t$conf.int[1])
+CI_up <- c(CI_up, t$conf.int[2])
+overlaps <-  c(overlaps, length(common))
+totals <-  c(totals, nrow(Christiansen))
+names <- c(names, name)
+samples <- c(samples, sample_size)
+dmps <- c(dmps, nrow(Christiansen))
+
+
+#Plot barplot with number of DMPs they report (that we test)
+names(dmps) <- names
+dmps <- as.data.frame(dmps)
+dmps$name <- rownames(dmps)
+dmps$cols <- c("WholeBlood", "AdiposeSubcutaneous", "Lung", "Lung", "Lung", "WholeBlood")
+
+#Get tissue colors
+cols <- read.csv("data/public/tissues_sorted.csv")
+cols <- cols[cols$tissue %in% c("Lung", "WholeBlood", "AdiposeSubcutaneous"),]
+cols <- cols$color
+names(cols) <- c("Lung", "AdiposeSubcutaneous", "WholeBlood")
+
+
+
+#Adjust p.values add sample size and color by tissue
+p_vals <- p.adjust(p_vals) #All are still significant
+
+to_plot <- as.data.frame(cbind(names, ors, CI_down, CI_up, p_vals))
+to_plot$ors <- as.numeric(to_plot$ors)
+to_plot$CI_down <- as.numeric(to_plot$CI_down)
+to_plot$CI_up <- as.numeric(to_plot$CI_up)
+to_plot$p_vals <- as.numeric(to_plot$p_vals)
+to_plot$cols <- c("WholeBlood", "AdiposeSubcutaneous", "Lung", "Lung", "Lung", "WholeBlood") 
+
+
+figure_6 <- list(dmps, to_plot)
+names(figure_6) <- c("dmps", "to_plot")
+saveRDS(figure_6, paste0("../figures/data/methylation_literature.rds"))
+

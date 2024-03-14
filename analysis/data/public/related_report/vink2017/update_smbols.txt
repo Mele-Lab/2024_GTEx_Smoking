@@ -1,0 +1,9 @@
+Input	Match type	Approved symbol	Approved name	HGNC ID	Location
+GPR56	Previous symbol	ADGRG1	adhesion G protein-coupled receptor G1	HGNC:4512	16q21
+IGJ	Previous symbol	JCHAIN	joining chain of multimeric IgA and IgM	HGNC:5713	4q13.3
+TTC25	Previous symbol	ODAD4	outer dynein arm docking complex subunit 4	HGNC:25280	17q21.2
+SEPT11	Previous symbol	SEPTIN11	septin 11	HGNC:25589	4q21.1
+GUCY1A3	Previous symbol	GUCY1A1	guanylate cyclase 1 soluble subunit alpha 1	HGNC:4685	4q32.1
+GNB2L1	Previous symbol	RACK1	receptor for activated C kinase 1	HGNC:4399	5q35.3
+SDPR	Previous symbol	CAVIN2	caveolae associated protein 2	HGNC:10690	2q32.3
+RARRES3	Previous symbol	PLAAT4	phospholipase A and acyltransferase 4	HGNC:9869	11q12.3
