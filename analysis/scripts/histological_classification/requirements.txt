@@ -1,0 +1,11 @@
+tensorflow
+mlflow
+histolab
+opencv-python
+pandas
+numpy
+matplotlib
+seaborn
+histolab
+pathlib
+openslide-python

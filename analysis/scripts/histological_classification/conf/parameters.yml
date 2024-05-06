@@ -1,0 +1,62 @@
+# ---------------------
+# GLOBAL PARAMETERS
+# ---------------------
+
+# Put the name of the tissue you want (exactly as named in the GTEx Portal):
+TISSUE_TYPE: "Lung"
+
+# Define the place to store the images (do not replace the final "{}"):
+IMAGES_PATH: "./data/images/GTEx/{}"
+
+# Define the tiles size:
+SIZE: 512
+
+# Histolab only has available levels 0, 1, and 2:
+LEVEL: 0
+
+# Define the amount of tissue in each tile (more tissue -> less white background):
+TISSUE_PERCENT: 85
+
+# Define the place to store the tile images (do not replace the "{}"):
+TILES_FOLDER: "sz{}_lv{}_tp{}/tiles__raw"
+
+# Number of cores to use with multiprocess when downloading and processing tiles:
+NUM_PROCESSES: 4
+
+# If true it will download the WSIs. If false, it will look for images locally in IMAGES_PATH:
+DOWNLOAD: false
+# ---------------------
+# DATASET PATHS
+# ---------------------
+
+# This is the csv that we can get from GTEx Portal with all Sample IDs and some of its attributes.
+PATH__GTExPortalDB: "./data/GTEx Portal.csv"
+
+# This csv should have two main columns, smoker_status and sample_id. Any other columns will be ignored.
+PATH__SmokerStatus:  "./data/smoking_annotation.csv"
+
+# This csv has only one column with the sample ids of the predefined test set.
+PATH_TestSample: "./data/test_subjects.csv"
+
+# ---------------------
+# MODEL PARAMETERS
+# ---------------------
+
+train_classes: 
+  - "Smoker"
+  - "Non Smoker"
+#  - "Ex Smoker"
+#  - "unknown"
+
+validation_set: true
+predefined_test_sample: true
+model_type: xception_ft
+batch_size: 64
+learning_rate: 0.0001
+epochs: 10
+batch_size_test: 2000
+augmentation: False
+weighted: True
+multiplier_factor: 1.35
+mlflow_exp_name: 'test'
+model_suffix: '01'
