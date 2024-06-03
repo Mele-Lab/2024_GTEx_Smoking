@@ -46,9 +46,11 @@ dev.off()
 figure_data <- readRDS(file = "data/methylation_literature.rds")
 for(i in 1:length(figure_data)) assign(names(figure_data)[i], figure_data[[i]])
 
-cols <- c("#88CCEE", "#CC6677", "#DDCC77")
-names(cols) <- c("Lung", "WholeBlood", "AdiposeSubcutaneous")
+# cols <- c("#88CCEE", "#CC6677", "#DDCC77", "#117733", "#332288", "#999933", "#882255", "#661100", "#888888")
+cols <- c("#88CCEE", "#CC6677", "#DDCC77", "#8a51a4")
 
+names(cols) <- c("Lung", "WholeBlood", "AdiposeSubcutaneous", "ColonTransverse")
+dmps$cols[9] <- "ColonTransverse"
 a <- ggplot(to_plot, aes(log(ors), names, col=cols)) + ylab("") +
   xlab("Log(Odds ratio)") + theme_bw() + scale_colour_manual(values=cols, guide = "none") +
   geom_vline(aes(xintercept = 0), linewidth = .25, linetype = "dashed") +
@@ -77,7 +79,7 @@ b <- ggplot(dmps, aes(dmps, name, fill=cols)) + geom_col() + theme_bw() +
 
 
 
-pdf(file =  "figures/figure_s4/replication.pdf", w = 6, h = 2)
+pdf(file =  "figures/figure_s5/replication.pdf", w = 6, h = 2.5)
 ggpubr::ggarrange(a, b, widths = c(0.7,0.3), common.legend = TRUE, legend = "right")
 dev.off()
 

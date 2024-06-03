@@ -16,7 +16,7 @@ print("Reading results")
 results <- readRDS("tissues/Lung/DML_results.rds")
 
 #Papers to compare:
-annotation <- read.csv("~/Documents/mn4/scratch/bsc83/bsc83535/GTEx/v9/Oliva/GPL21145_MethylationEPIC_15073387_v-1-0_processed.csv")
+annotation <- read.csv("~/Documents/mn5/scratch/bsc83/MN4/bsc83/bsc83535/GTEx/v9/Oliva/GPL21145_MethylationEPIC_15073387_v-1-0_processed.csv")
 #Probes tested in both EPIC and 450K Arrays
 background <- annotation[is.na(annotation$Methyl450_Loci)==F,"Name"]
 
@@ -67,6 +67,7 @@ totals <- length(common) + only_blood
 names <- name
 samples <- sample_size
 dmps <- nrow(blood) #positions they reported that are available in the EPIC array (mention in the legend)
+
 
 #Adipose tissue https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6196025/
 name <- "Adipose: Tsai et al. 2018"
@@ -209,18 +210,115 @@ names <- c(names, name)
 samples <- c(samples, sample_size)
 dmps <- c(dmps, nrow(Christiansen))
 
+#Bergstedt et al.
+name <- "Blood: Bergstedt et al. 2022"
+data <- "EPIC Array"
+Bergstedt <- readRDS("data/literature/Smoking_status.rds")
+# tar -zxvf Condition1_Adjustment_for_16_measured_cell_fractions.tar.gz Smoking_status.rds
+Bergstedt <- Bergstedt[Bergstedt$Levels=="Smoker",]
+
+smoking2 <- results$Smoking2
+background <- rownames(smoking2)
+
+signif <- smoking2[smoking2$adj.P.Val<0.05,]
+hypo <- rownames(signif[signif$logFC<0,])
+hyper <- rownames(signif[signif$logFC>0,])
+
+Bergstedt <- Bergstedt[Bergstedt$P_FDR<0.05,] #2410
+Bergstedt <- Bergstedt[Bergstedt$Probe %in% background,] #2368
+Bergstedt_up <- Bergstedt$Probe[Bergstedt$Estimate>0]
+Bergstedt_down <- Bergstedt$Probe[Bergstedt$Estimate<0]
+common <- c(Bergstedt_up[Bergstedt_up %in% hyper], Bergstedt_down[Bergstedt_down %in% hypo])
+bg <- background[!background %in% Bergstedt$Probe] #bg without their signif
+bg <- bg[!bg %in% rownames(signif)] #bg without our signif
+m <- matrix(c(length(common), nrow(Bergstedt)-length(common), nrow(signif)-length(common),
+              length(bg)), nrow=2)
+t <- fisher.test(m)
+# t <- fisher.test(m, alternative = "greater")
+p_vals <- c(p_vals, t$p.value)
+ors <-  c(ors, t$estimate)
+CI_down <- c(CI_down, t$conf.int[1])
+CI_up <- c(CI_up, t$conf.int[2])
+overlaps <-  c(overlaps, length(common))
+totals <-  c(totals, nrow(Bergstedt))
+names <- c(names, name)
+samples <- c(samples, sample_size)
+dmps <- c(dmps, nrow(Bergstedt))
+
+
+
+#Li et al. https://www.cell.com/ajhg/abstract/S0002-9297(24)00044-2
+name <- "Lung: Li et al. 2024"
+data <- "EPIC Array"
+Li <- read.delim("data/literature/Supplementary Data File 01 Lung Tissue.txt", sep=" ")
+Li$FDR <- p.adjust(Li$P.Value, method = "BH")
+
+Li <- Li[Li$FDR<0.05,] #6350
+Li <- Li[Li$Name %in% background,] #all of them, of course
+Li_up <- Li$Name[Li$logFC>0]
+Li_down <- Li$Name[Li$logFC<0]
+common <- c(Li_up[Li_up %in% hyper], Li_down[Li_down %in% hypo])
+bg <- background[!background %in% Li$Name] #bg without their signif
+bg <- bg[!bg %in% rownames(signif)] #bg without our signif
+m <- matrix(c(length(common), nrow(Li)-length(common), nrow(signif)-length(common),
+              length(bg)), nrow=2)
+t <- fisher.test(m)
+p_vals <- c(p_vals, t$p.value)
+ors <-  c(ors, t$estimate)
+CI_down <- c(CI_down, t$conf.int[1])
+CI_up <- c(CI_up, t$conf.int[2])
+overlaps <-  c(overlaps, length(common))
+totals <-  c(totals, nrow(Li))
+names <- c(names, name)
+samples <- c(samples, sample_size)
+dmps <- c(dmps, nrow(Li))
+
+#Colon
+#Li et al. https://www.cell.com/ajhg/abstract/S0002-9297(24)00044-2
+name <- "Colon: Li et al. 2024"
+data <- "EPIC Array"
+Li <- read.delim("data/literature/Supplementary Data File 02 Colon Tissue.txt", sep=" ")
+Li$FDR <- p.adjust(Li$P.Value, method = "BH")
+
+results <- readRDS("tissues/ColonTransverse/DML_results.rds")
+smoking2 <- results$Smoking2
+background <- rownames(smoking2)
+signif <- smoking2[smoking2$adj.P.Val<0.05,]
+hypo <- rownames(signif[signif$logFC<0,])
+hyper <- rownames(signif[signif$logFC>0,])
+
+Li <- Li[Li$FDR<0.05,] #2735
+Li <- Li[Li$Name %in% background,] #all of them, of course
+Li_up <- Li$Name[Li$logFC>0]
+Li_down <- Li$Name[Li$logFC<0]
+common <- c(Li_up[Li_up %in% hyper], Li_down[Li_down %in% hypo])
+bg <- background[!background %in% Li$Name] #bg without their signif
+bg <- bg[!bg %in% rownames(signif)] #bg without our signif
+m <- matrix(c(length(common), nrow(Li)-length(common), nrow(signif)-length(common),
+              length(bg)), nrow=2)
+t <- fisher.test(m)
+p_vals <- c(p_vals, t$p.value)
+ors <-  c(ors, t$estimate)
+CI_down <- c(CI_down, t$conf.int[1])
+CI_up <- c(CI_up, t$conf.int[2])
+overlaps <-  c(overlaps, length(common))
+totals <-  c(totals, nrow(Li))
+names <- c(names, name)
+samples <- c(samples, sample_size)
+dmps <- c(dmps, nrow(Li))
+
 
 #Plot barplot with number of DMPs they report (that we test)
 names(dmps) <- names
 dmps <- as.data.frame(dmps)
 dmps$name <- rownames(dmps)
-dmps$cols <- c("WholeBlood", "AdiposeSubcutaneous", "Lung", "Lung", "Lung", "WholeBlood")
+dmps$cols <- c("WholeBlood", "AdiposeSubcutaneous", "Lung", "Lung", "Lung", "WholeBlood", "WholeBlood", "Lung", "Colon")
 
 #Get tissue colors
 cols <- read.csv("data/public/tissues_sorted.csv")
-cols <- cols[cols$tissue %in% c("Lung", "WholeBlood", "AdiposeSubcutaneous"),]
+cols <- cols[cols$tissue %in% c("Lung", "WholeBlood", "AdiposeSubcutaneous", "ColonTransverse"),]
 cols <- cols$color
-names(cols) <- c("Lung", "AdiposeSubcutaneous", "WholeBlood")
+names(cols) <- c("ColonTransverse", "Lung", "AdiposeSubcutaneous", "WholeBlood")
 
 
 
@@ -232,7 +330,7 @@ to_plot$ors <- as.numeric(to_plot$ors)
 to_plot$CI_down <- as.numeric(to_plot$CI_down)
 to_plot$CI_up <- as.numeric(to_plot$CI_up)
 to_plot$p_vals <- as.numeric(to_plot$p_vals)
-to_plot$cols <- c("WholeBlood", "AdiposeSubcutaneous", "Lung", "Lung", "Lung", "WholeBlood") 
+to_plot$cols <- c("WholeBlood", "AdiposeSubcutaneous", "Lung", "Lung", "Lung", "WholeBlood", "WholeBlood", "Lung", "ColonTransverse") 
 
 
 figure_6 <- list(dmps, to_plot)
