@@ -7,8 +7,15 @@ git clone https://github.com/Mele-Lab/2024_GTEx_Smoking.git
 
 # Software dependencies
 
-Software/Packages | Version |Software/Packages | Version 
-edgeR | X | dplyr | Y |
+| Package | Version | Packages | Version |
+| -------- | ------- | ------- |------- |
+| edgeR | 4.0.16 | dplyr | 1.1.4 |
+| optparse | 1.7.5 | limma | 3.58.1 |
+| missMethyl | 1.38.0 | ggplot2 | 3.5.0 |
+| reshape2 | 1.4.4 | caret | 6.0-94 |
+| hier.part | 1.0-6 | sandwich | 3.1-0 |
+| multcomp | 1.4-25 | lmtest | 0.9-40 |
+
 
 # Running the code
 
