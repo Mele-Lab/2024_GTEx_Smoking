@@ -1,4 +1,4 @@
-Companion Github Repo for the paper "The transcriptomic effects of cigarrete smoking across human tissues"
+Companion Github Repo for the paper "The molecular impact of cigarette smoking resembles aging across tissues"
 
 # GTEX-Smoking
 
