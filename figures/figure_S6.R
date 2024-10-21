@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 # @Author: Jose Miguel Ramirez
 # @E-mail: jose.ramirez1@bsc.es
-# @Description: Generate publication Figure S9
+# @Description: Generate publication Figure S6
 
 
 #Set path 

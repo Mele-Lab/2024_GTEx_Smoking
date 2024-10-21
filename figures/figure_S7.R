@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 # @Author: Jose Miguel Ramirez
 # @E-mail: jose.ramirez1@bsc.es
-# @Description: Generate publication Figure S10
+# @Description: Generate publication Figure S7
 
 
 #Set path 
@@ -53,8 +53,10 @@ to_plot_correlations$category[to_plot_correlations$region_chromhmm %in% c("Activ
 table(to_plot_correlations$category) #18 annotated as enhancer and 4 as promoter 
 to_test <- to_plot_correlations[to_plot_correlations$p.adj<0.05,]
 table(to_test$category, to_test$cor>0)
-39/49
-7/10
+
+#39/49
+#7/10
+
 # to_plot_correlations$category[to_plot_correlations$region_chromhmm %in% c("Genic enhancer")] <- "genic enhancer" #3 of the positively correlated with enhancers are genic enhancers
 to_plot_correlations$New[to_plot_correlations$New=="TRUE"] <- "Known"
 to_plot_correlations$New[to_plot_correlations$New=="FALSE"] <- "New"
