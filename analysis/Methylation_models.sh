@@ -51,3 +51,8 @@ Rscript 16.TFBS_ChipAtlas_github.R
 Rscript 17.general_methylation.R
 Rscript 17.bivalent_enhancers_correlations.R
 
+
+#WGBS analysis
+Rscript 21.DMR_call.R
+Rscript 21.DMR_plot_CGI.R
+Rscript 21.DMR_plot_polycomb.R
