@@ -22,7 +22,7 @@ tissue.data <- read.csv(file = "tissue_abreviation.txt")
 # Load figure data
 data_prev <- readRDS(file = "data/reproduction_analysis.rds")
 data_degs <- readRDS(file = "data/degs_summary.rds")
-
+#metadata <- readRDS(file = "data/metadata.rds")
 
 for(i in 1:length(data_prev)) assign(names(data_prev)[i], data_prev[[i]])
 for(i in 1:length(data_degs)) assign(names(data_degs)[i], data_degs[[i]])
@@ -69,7 +69,6 @@ dev.off()
 
 
 #Figure S1B----
-## ..add code for downsampling here ...
 load("data/downsampling_expression.Rdata")
 medians <- round(medians)
 rownames(medians) <- sapply(rownames(medians), function(name) tissue.data$Name[tissue.data$X==name])
@@ -97,8 +96,49 @@ Heatmap(apply(medians, 2,function(x) x/max(x,na.rm=T)), col = brewer.pal(9,"BuPu
         row_names_side = "left",)
 dev.off()
 
- 
-# Figure S1C-----
+
+# Figure S1C ----
+
+degs_summary_per_logFC <- readRDS("data/degs_summary_per_logFC.rds")
+
+DEGS.per.tissue  <- dcast(degs_summary_per_logFC, tissue ~ logFC, value.var = "n_degs", fill = 0)
+DEGS.per.tissue <- merge(DEGS.per.tissue, tissue.data,by.x = "tissue", by.y = "SMTSDNOSEP")
+DEGS.per.tissue <- merge(DEGS.per.tissue, n_samples_per_tissue,by = "tissue")
+
+
+DEGS.per.tissue <- DEGS.per.tissue  %>% 
+  arrange(-`0`)
+
+tissues <- DEGS.per.tissue$tissue
+
+names(DEGS.per.tissue)[2:6] <- c("logFC 0", "logFC 0.5", "logFC 0.7", "logFC 1", "logFC 1.5")
+
+DEGS.per.tissue_scaled <- DEGS.per.tissue
+
+DEGS.per.tissue_scaled[2:6] <- apply(DEGS.per.tissue[2:6], 2, scale)
+ht_DEGs <- Heatmap(as.matrix(DEGS.per.tissue_scaled[2:6]),
+                   col = brewer.pal(9,"BuPu")[1:7],
+                   na_col = "white",
+                   show_heatmap_legend = F,
+                   cluster_rows = F,
+                   cluster_columns = F,
+                   name = "Number of DEGs",
+                   row_names_side = "left",
+                   row_labels = DEGS.per.tissue$SMTSCUSTOM,
+                   column_names_side = "bottom",
+                   row_names_gp = gpar(fontsize = 9),
+                   column_names_gp = gpar(fontsize = 10),
+                   cell_fun = function(j, i, x, y, width, height, fill) {
+                     grid.text(prettyNum(DEGS.per.tissue[2:6][i, j], big.mark = ",",), x, y, gp = gpar(fontsize = 10))},
+                   heatmap_legend_param = list(direction = "vertical", title_position = "topcenter")
+)
+
+
+pdf("figures/figure_s1/ht_degs_logFC.pdf", w = 6, h = 10)
+plot(ht_DEGs)
+dev.off()
+
+# Figure S1d-----
 
 colnames(reproduced_data) <- c("Replicated", "Total", "study", "tissue", "OR", "ConfIntL", "ConfIntUpper", "p_vals")
 
@@ -168,7 +208,7 @@ ggpubr::ggarrange(a, b, widths = c(0.65,0.35), common.legend = T, legend = "righ
 dev.off()
 
 
-#Figure S1D ----
+#Figure S1e ----
 #NOTE: I am grouping by gene name because there are no duplicates names in the subset of genes I want to plot
 DEGS.recurrent <- DEGS %>%
   group_by(gene_name) %>% 
