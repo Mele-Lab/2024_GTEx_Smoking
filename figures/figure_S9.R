@@ -142,3 +142,115 @@ dev.off()
 pdf(paste0(dir, "plots_no_labels.pdf"), w = 7, h = 12)
 ggarrange(g+theme(legend.position = "None"), g2+theme(legend.position = "None"), g3+theme(legend.position = "None"), nrow = 3)
 dev.off()
+
+# Methylation plot
+tissue_convert <- tissue.data$TISSUENAMEABREV
+names(tissue_convert) <- tissue.data$SMTSDNOSEP
+
+safe_colorblind_palette <- c("#88CCEE", "#CC6677", "#DDCC77", "#117733", "#332288", "#AA4499", 
+                             "#44AA99", "#999933", "#882255", "#661100", "#6699CC", "#888888")
+
+
+# Boxplot aux function
+
+get_box_stats <- function(y, upper_limit = max(y) * 1.25) {
+  return(data.frame(
+    y = 0.95 * upper_limit,
+    label = paste(
+      "N =", length(y), "\n"
+    )
+  ))
+}
+
+size <- 15
+
+theme_agingclock <- theme(legend.title = element_blank(),
+                          panel.grid.major = element_blank(),
+                          panel.grid.minor = element_blank(),
+                          axis.text.x = element_text(colour="black", size=size),
+                          axis.text.y = element_text(colour="black", size=size+1),
+                          axis.title.x = element_text(size=size+1),
+                          legend.text = element_text(size=size+1),
+                          legend.key.size = unit(0.9,"cm"), 
+                          strip.background = element_rect(fill = "#88CCEE"),
+                          strip.text = element_text(size = 13)) +
+  theme(plot.title = element_text(hjust = 0.5, size = 20, face = "bold")) 
+
+## Load the clock data
+
+## Hovarth clock 
+data_ht <- readRDS("scripts/methylation//hovarth_molecular_clocks.rds")
+#  DamAge and AdaptAge
+vadimAge <- readRDS("scripts/methylation/vadims_molecular_clocks.rds")
+
+# Figure S8a -----
+# Hovarth Clocks
+data_ht$comparison$sig <- factor(ifelse(data_ht$comparison$FDR > 0.05, "FDR > 0.05", "FDR < 0.05"), levels = c("FDR > 0.05", "FDR < 0.05"))
+data_ht$comparison$estimate <- as.numeric(data_ht$comparison$estimate)
+data_ht$comparison$lCI <- as.numeric(data_ht$comparison$lCI)
+data_ht$comparison$hCI <- as.numeric(data_ht$comparison$hCI)
+
+data_ht$comparison$tissue <- tissue_convert[data_ht$comparison$tissue]
+data_ht$comparison$tissue <- factor(data_ht$comparison$tissue, levels = unique(data_ht$comparison$tissue)[9:1])
+data_ht$comparison$comparison <- factor(data_ht$comparison$comparison, levels = c("Never vs Smoking","Never vs Ex-Smoker", "Ex-Smoker vs Smoker"))
+
+g1 <- ggplot(data_ht$comparison, aes(x=estimate, y=tissue, alpha=sig)) + 
+  geom_errorbar(aes(xmin=lCI, xmax=hCI), width=.3, colour = "black") + 
+  geom_vline(xintercept = 0) +
+  geom_point(size=3, colour = "black") + ylab('') + theme_bw() +
+  xlab("Coefficient (Years)") +
+  ggtitle("Horvath clock") + 
+  theme_agingclock + 
+  guides(color = guide_legend(override.aes = list(size = 3)),
+         alpha = guide_legend(override.aes = list(size = 3))) +
+  facet_wrap(~ comparison,  strip.position = "top")
+
+
+
+
+# Vadim Clocks
+vadimAge$adapt$comparison$sig <- factor(ifelse(vadimAge$adapt$comparison$FDR > 0.05, "FDR > 0.05", "FDR < 0.05"), levels = c("FDR > 0.05", "FDR < 0.05"))
+vadimAge$adapt$comparison$estimate <- as.numeric(vadimAge$adapt$comparison$estimate)
+vadimAge$adapt$comparison$lCI <- as.numeric(vadimAge$adapt$comparison$lCI)
+vadimAge$adapt$comparison$hCI <- as.numeric(vadimAge$adapt$comparison$hCI)
+
+vadimAge$adapt$comparison$tissue <- tissue_convert[vadimAge$adapt$comparison$tissue]
+vadimAge$adapt$comparison$tissue <- factor(vadimAge$adapt$comparison$tissue, levels = unique(vadimAge$adapt$comparison$tissue)[9:1])
+vadimAge$adapt$comparison$comparison <- factor(vadimAge$adapt$comparison$comparison, levels = c("Never vs Smoking","Never vs Ex-Smoker", "Ex-Smoker vs Smoker"))
+
+g2 <- ggplot(vadimAge$adapt$comparison, aes(x=estimate, y=tissue, alpha=sig)) + 
+  geom_errorbar(aes(xmin=lCI, xmax=hCI), width=.3, colour = "black") + 
+  geom_vline(xintercept = 0) +
+  geom_point(size=3, colour = "black") + ylab('') + theme_bw() +
+  xlab("Coefficient (Years)") +
+  ggtitle("AdaptAge clock") + 
+  theme_agingclock + 
+  guides(color = guide_legend(override.aes = list(size = 3)),
+         alpha = guide_legend(override.aes = list(size = 3))) +
+  facet_wrap(~ comparison,  strip.position = "top")
+
+
+vadimAge$damn$comparison$sig <- factor(ifelse(vadimAge$damn$comparison$FDR > 0.05, "FDR > 0.05", "FDR < 0.05"), levels = c("FDR > 0.05", "FDR < 0.05"))
+vadimAge$damn$comparison$estimate <- as.numeric(vadimAge$damn$comparison$estimate)
+vadimAge$damn$comparison$lCI <- as.numeric(vadimAge$damn$comparison$lCI)
+vadimAge$damn$comparison$hCI <- as.numeric(vadimAge$damn$comparison$hCI)
+
+vadimAge$damn$comparison$tissue <- tissue_convert[vadimAge$damn$comparison$tissue]
+vadimAge$damn$comparison$tissue <- factor(vadimAge$damn$comparison$tissue, levels = unique(vadimAge$damn$comparison$tissue)[9:1])
+vadimAge$damn$comparison$comparison <- factor(vadimAge$damn$comparison$comparison, levels = c("Never vs Smoking","Never vs Ex-Smoker", "Ex-Smoker vs Smoker"))
+
+g3 <- ggplot(vadimAge$damn$comparison, aes(x=estimate, y=tissue, alpha=sig)) + 
+  geom_errorbar(aes(xmin=lCI, xmax=hCI), width=.3, colour = "black") + 
+  geom_vline(xintercept = 0) +
+  geom_point(size=3, colour = "black") + ylab('') + theme_bw() +
+  xlab("Coefficient (Years)") +
+  ggtitle("DamAge clock") + 
+  theme_agingclock +
+  guides(color = guide_legend(override.aes = list(size = 3)),
+         alpha = guide_legend(override.aes = list(size = 3))) +
+  facet_wrap(~ comparison,  strip.position = "top")
+
+pdf("scripts/methylation/figure_s8.pdf", h = 9, w = 10)
+ggarrange(g1,g2,g3, nrow = 3, labels = c("a", "b", "c"),
+          font.label = list(size = 18, color = "black", face = "bold", family = NULL))
+dev.off()

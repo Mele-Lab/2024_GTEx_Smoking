@@ -54,7 +54,7 @@ ht_ml <- Heatmap(t(model_classification[,c(2,4)]),
                heatmap_legend_param = list(direction = "vertical")
 )
 
-pdf(file = "figures/figure_S11/ml_classification.pdf", w = 23, h = 3)
+pdf(file = "figures/figure_S11/ml_classification.pdf", w = 23, h = 4)
 draw(ht_ml,
      heatmap_legend_side = "right")
 dev.off()
